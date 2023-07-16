@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json())
 app.use(cors())
 const port = 3333;
-const mongoURI = 'mongodb+srv://lalaindriani:lalaindriani@cluster0.g0dsiuf.mongodb.net/?retryWrites=true&w=majority';
+const uri = 'mongodb+srv://lalaindriani:lalaindriani@cluster0.g0dsiuf.mongodb.net/?retryWrites=true&w=majority';
 
 const RencanaSchema = new mongoose.Schema({
     rencana: {
@@ -214,29 +214,27 @@ app.post('/login', login);
 
 
 
-async function connectToMongoDB() {
+// Connect to MongoDB
+const connect = async () => {
   try {
-    await mongoose.connect(mongoURI, {
+    await mongoose.connect(uri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('Connected to MongoDB');
-  } catch (err) {
-    console.error('Failed to connect to MongoDB', err);
-    // Optionally, you can throw the error to handle it in the calling function
-    // throw err;
+    console.log("Connected to MongoDB!");
+  } catch (error) {
+    throw error;
   }
-}
+};
 
-// Function to start the server and listen on the specified port
-function startServer() {
+mongoose.connection.on("disconnected", () => {
+  console.log("MongoDB disconnected!");
+});
+
+// Start the server
+connect().then(() => {
+  const port = process.env.PORT || 3333;
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
-}
-
-// Call the connectToMongoDB function first, and then start the server if the connection is successful
-connectToMongoDB().then(startServer).catch((err) => {
-  // Handle any errors that might occur during the connection or server startup process
-  console.error('Error during server startup:', err);
 });
