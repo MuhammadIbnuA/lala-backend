@@ -214,16 +214,29 @@ app.post('/login', login);
 
 
 
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-    .then(() => {
-      console.log('Connected to MongoDB');
-      app.listen(port, () => {
-        console.log(`Server is running on port ${port}`);
-      });
-    })
-    .catch((err) => {
-      console.error('Failed to connect to MongoDB', err);
+async function connectToMongoDB() {
+  try {
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
+    console.log('Connected to MongoDB');
+  } catch (err) {
+    console.error('Failed to connect to MongoDB', err);
+    // Optionally, you can throw the error to handle it in the calling function
+    // throw err;
+  }
+}
+
+// Function to start the server and listen on the specified port
+function startServer() {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+// Call the connectToMongoDB function first, and then start the server if the connection is successful
+connectToMongoDB().then(startServer).catch((err) => {
+  // Handle any errors that might occur during the connection or server startup process
+  console.error('Error during server startup:', err);
+});
